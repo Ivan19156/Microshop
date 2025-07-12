@@ -37,7 +37,28 @@ services:
       - "10002:10002" # Table
     volumes:
       - azurite_data:/data
-
+  authservice:
+    container_name: authservice
+    build:
+      context: ./AuthService   # шлях до папки з Dockerfile твого сервісу
+      dockerfile: Dockerfile   # якщо Dockerfile має іншу назву - вкажи тут
+    ports:
+      - "5000:5000"            # прокидаємо порт 5000 з контейнера на хост  
+    environment:
+      - ASPNETCORE_URLS=http://+:5000
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=AuthDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;
+      # додай інші змінні середовища, які потрібні сервісу
+    depends_on:
+      - sqlserver
+      - rabbitmq
+      - redis
+  gateway:
+    container_name: gateway
+    build:
+      context: ./Gateway.Api
+      dockerfile: Dockerfile
+    ports:
+      - "7000:80"
 volumes:
   sql_data:
   azurite_data:

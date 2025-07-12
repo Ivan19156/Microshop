@@ -1,0 +1,32 @@
+{
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/account/login",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "authservice", "Port": 5000 }],
+      "UpstreamPathTemplate": "/auth/account/login",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    {
+      "DownstreamPathTemplate": "/account/google-response",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "authservice", "Port": 5000 }],
+      "UpstreamPathTemplate": "/auth/account/google-response",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    {
+      "DownstreamPathTemplate": "/account/userinfo",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "authservice", "Port": 5000 }],
+      "UpstreamPathTemplate": "/auth/account/userinfo",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "http://localhost:7000"
+  }
+}
