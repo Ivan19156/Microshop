@@ -6,6 +6,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.Google;
 using System.Text;
+using Microsoft.AspNetCore.Authentication.OAuth;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +16,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // 2. Додавання Identity
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
@@ -29,80 +31,70 @@ var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
-})
-.AddCookie(options =>
-{
-    options.LoginPath = "/account/login";  // важливо
-    options.AccessDeniedPath = "/account/denied"; // якщо буде треба
-    options.Cookie.SecurePolicy = CookieSecurePolicy.None;
-    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
-        ValidateAudience = false,
+        ValidateAudience = false, // якщо не перевіряєш аудиторію — можна залишити false
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtIssuer,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!))
     };
-})
-.AddGoogle(options =>
-{
-    options.ClientId = "35278601164-6ig60b96gl71ul0vc1fnv3r7nvbs6o0g.apps.googleusercontent.com";
-    options.ClientSecret = "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";
-    options.Scope.Add("email");
-    options.Scope.Add("profile");
-    options.SaveTokens = true;
 });
 
 // 4. Додаємо контролери і Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(opt =>
+builder.Services.AddSwaggerGen(c =>
 {
-    opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        In = ParameterLocation.Header,
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
         Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer",
-        Description = "Введи 'Bearer {token}'"
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey
     });
 
-    opt.AddSecurityRequirement(new OpenApiSecurityRequirement
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
             {
-              Reference = new OpenApiReference
-              {
-                  Type = ReferenceType.SecurityScheme,
-                  Id = "Bearer"
-              }
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
             },
-            new string[] { }
+            Array.Empty<string>()
         }
     });
 });
 
+
 var app = builder.Build();
+
+app.UseMiddleware<ErrorHandlingMiddleware>();
+
 
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapDefaultControllerRoute(); // <-- додай це
+//app.MapDefaultControllerRoute(); // <-- додай це
 
 
 app.Run();

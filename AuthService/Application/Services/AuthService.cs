@@ -2,12 +2,12 @@ using Microsoft.AspNetCore.Identity;
 
 public class AuthenticationService : IAuthService
 {
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly ITokenService _tokenService;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
 
     public AuthenticationService(
-        UserManager<IdentityUser> userManager,
+        UserManager<ApplicationUser> userManager,
         ITokenService tokenService,
         IRefreshTokenRepository refreshTokenRepository)
     {
@@ -21,8 +21,8 @@ public class AuthenticationService : IAuthService
         if (dto.Password != dto.ConfirmPassword)
             throw new Exception("Passwords do not match");
 
-        var user = new IdentityUser { UserName = dto.Email, Email = dto.Email };
-        var result = await _userManager.CreateAsync(user, dto.Password);
+        var user = new ApplicationUser { UserName = dto.Email, Email = dto.Email };
+        var result = await _userManager.CreateAsync((ApplicationUser)user, dto.Password);
 
         if (!result.Succeeded)
             throw new Exception(string.Join("; ", result.Errors.Select(e => e.Description)));
@@ -33,8 +33,16 @@ public class AuthenticationService : IAuthService
     public async Task<(string accessToken, string refreshToken)> LoginAsync(LoginDto dto)
     {
         var user = await _userManager.FindByEmailAsync(dto.Email);
-        if (user == null || !await _userManager.CheckPasswordAsync(user, dto.Password))
-            throw new UnauthorizedAccessException("Invalid credentials");
+        if (user == null)
+    {
+        throw new Exception("User not found");
+    }
+
+var passwordValid = await _userManager.CheckPasswordAsync(user, dto.Password);
+if (!passwordValid)
+{
+    throw new Exception("Incorrect password");
+}
 
         var accessToken = _tokenService.GenerateAccessToken(user);
         var refreshToken = _tokenService.GenerateRefreshToken(user);

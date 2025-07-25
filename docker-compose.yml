@@ -16,8 +16,8 @@ services:
     image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
-      - "5672:5672"     # для сервісів
-      - "15672:15672"   # для UI
+      - "5672:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
@@ -32,26 +32,46 @@ services:
     image: mcr.microsoft.com/azure-storage/azurite
     container_name: azurite
     ports:
-      - "10000:10000" # Blob
-      - "10001:10001" # Queue
-      - "10002:10002" # Table
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
     volumes:
       - azurite_data:/data
+
   authservice:
     container_name: authservice
     build:
-      context: ./AuthService   # шлях до папки з Dockerfile твого сервісу
-      dockerfile: Dockerfile   # якщо Dockerfile має іншу назву - вкажи тут
+      context: ./AuthService
+      dockerfile: Dockerfile
     ports:
-      - "5000:5000"            # прокидаємо порт 5000 з контейнера на хост  
+      - "5000:5000"
     environment:
       - ASPNETCORE_URLS=http://+:5000
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=AuthDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;
-      # додай інші змінні середовища, які потрібні сервісу
     depends_on:
       - sqlserver
       - rabbitmq
       - redis
+
+  productservice:
+    container_name: productservice
+    build:
+      context: ./ProductService
+      dockerfile: Dockerfile
+    ports:
+      - "5002:80"
+    environment:
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=ProductDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;
+      - Redis__ConnectionString=redis:6379,abortConnect=false
+      - Azure__Blob__ConnectionString=UseDevelopmentStorage=true;
+      - Azure__Blob__ContainerName=product-images
+    depends_on:
+      - sqlserver
+      - redis
+      - rabbitmq
+      - azurite
+
   gateway:
     container_name: gateway
     build:
@@ -59,6 +79,18 @@ services:
       dockerfile: Dockerfile
     ports:
       - "7000:80"
+
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+    depends_on:
+      - gateway
+
 volumes:
   sql_data:
   azurite_data:
