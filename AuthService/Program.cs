@@ -11,21 +11,19 @@ using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Підключення БД
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 2. Додавання Identity
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+
+builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>() 
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-// Сервіси для токенів
+
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthenticationService>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
-// Зчитування налаштувань JWT
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 
@@ -40,7 +38,7 @@ builder.Services.AddAuthentication(options =>
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
-        ValidateAudience = false, // якщо не перевіряєш аудиторію — можна залишити false
+        ValidateAudience = false, 
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtIssuer,
@@ -48,7 +46,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// 4. Додаємо контролери і Swagger
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -94,7 +92,27 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-//app.MapDefaultControllerRoute(); // <-- додай це
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    const int maxRetries = 5;
+    int retryCount = 0;
 
-
-app.Run();
+    while (true)
+    {
+        try
+        {
+            await dbContext.Database.MigrateAsync();
+            Console.WriteLine("Database migration applied.");
+            break;
+        }
+        catch (Microsoft.Data.SqlClient.SqlException ex)
+        {
+            retryCount++;
+            Console.WriteLine($"Migration attempt {retryCount} failed: {ex.Message}");
+            if (retryCount >= maxRetries) throw;
+            await Task.Delay(2000);
+        }
+    }
+    app.Run();
+}

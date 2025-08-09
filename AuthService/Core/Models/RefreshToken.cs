@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Identity;
 namespace Models;
 public class RefreshToken
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.NewGuid();
     public string Token { get; set; } = default!;
     public DateTime ExpiresAt { get; set; }
-    public string UserId { get; set; } = default!;
+    public Guid UserId { get; set; } = default!;
 
-    public IdentityUser User { get; set; } = default!;
+    public ApplicationUser User { get; set; } = default!;
 }

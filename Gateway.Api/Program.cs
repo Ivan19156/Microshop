@@ -57,7 +57,6 @@ app.UseAuthorization();
 
 app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
-// Додаємо Ocelot Middleware
 await app.UseOcelot();
 
 app.Run();

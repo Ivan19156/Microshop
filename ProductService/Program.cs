@@ -10,8 +10,6 @@ using StackExchange.Redis;
 using MediatR;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-
-using ProductDbContext;
 using Middleware;
 using Cache;
 using Entities;
@@ -23,10 +21,16 @@ using WebAPI.Controllers;
 using Application.Products.Validators;
 
 using Polly;
-using Microsoft.Data.SqlClient; // для SqlException
+using Microsoft.Data.SqlClient; 
 using Microsoft.Extensions.Logging;
+using ProductService.Infrastructure.Persistence;
+using ProductService.Infrastructure.Repository;
+using ProductService.Application.Products.Mapping;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
-// The code now directly starts here, without the 'public class Program' and 'public static void Main' wrappers.
+
 var builder = WebApplication.CreateBuilder(args);
 
 var configuration = builder.Configuration;
@@ -38,11 +42,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
 // MediatR
-//builder.Services.AddMediatR(typeof(CreateProductCommand).Assembly);
-// builder.Services.AddMediatR(cfg =>
-//   cfg.RegisterServicesFromAssemblyContaining<Program>());
-builder.Services.AddMediatR(cfg =>
-    cfg.RegisterServicesFromAssemblyContaining<CreateProductHandler>());
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateProductCommand).Assembly));
+
 
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
@@ -64,9 +65,10 @@ builder.Services.AddStackExchangeRedisCache(options =>
 });
 
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 // AutoMapper
-//builder.Services.AddAutoMapper(typeof(CreateProductCommand).Assembly);
+builder.Services.AddAutoMapper((cfg => cfg.AddProfile<ProductProfile>()));
 
 // Controllers
 builder.Services.AddControllers();
@@ -84,6 +86,28 @@ builder.Services.AddSwaggerGen(opt =>
 
 builder.Services.AddHealthChecks();
 builder.Logging.AddConsole();
+var jwtKey = builder.Configuration["Jwt:Key"];
+var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtIssuer,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!))
+    };
+});
+
+
 
 var app = builder.Build();
 
@@ -102,27 +126,6 @@ app.MapHealthChecks("/health");
 //app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
-
-// using (var scope = app.Services.CreateScope())
-//         {
-//             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-//             const int maxRetries = 5;
-//             int retryCount = 0;
-
-//             while (true)
-//             {
-//                 try
-//                 {
-//                     dbContext.Database.Migrate();
-//                     break;
-//                 }
-//                 catch (Microsoft.Data.SqlClient.SqlException)
-//                 {
-//                     if (++retryCount >= maxRetries) throw;
-//                     Thread.Sleep(2000);
-//                 }
-//             }
-//         }
 
 using (var scope = app.Services.CreateScope())
 {

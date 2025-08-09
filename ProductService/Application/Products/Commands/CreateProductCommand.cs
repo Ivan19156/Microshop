@@ -3,4 +3,4 @@ using Application.Products.Dtos;
 
 namespace Application.Products.Commands;
 
-public record CreateProductCommand(string Name, string Description, decimal Price, string? ImageUrl ) : IRequest<int>;
+public record CreateProductCommand(Guid userId, CreateProductDto dto) : IRequest<Guid>;

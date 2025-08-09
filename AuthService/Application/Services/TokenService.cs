@@ -14,13 +14,14 @@ public class TokenService : ITokenService
         _config = config;
     }
 
-    public string GenerateAccessToken(IdentityUser user)
+    public string GenerateAccessToken(ApplicationUser user)
     {
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email!)
-        };
+           new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()), // Fix: Convert Guid to string  
+           new Claim(JwtRegisteredClaimNames.Email, user.Email!),
+           new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+       };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -34,15 +35,14 @@ public class TokenService : ITokenService
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
-    public RefreshToken GenerateRefreshToken(IdentityUser user)
+
+    public RefreshToken GenerateRefreshToken(ApplicationUser user)
     {
         return new RefreshToken
         {
             Token = Guid.NewGuid().ToString("N"),
             ExpiresAt = DateTime.UtcNow.AddDays(7),
-            UserId = user.Id
+            UserId = user.Id // Fix: Directly assign the Guid value from ApplicationUser.Id  
         };
     }
-
-    
 }

@@ -9,6 +9,9 @@ export const api = axios.create({
 api.interceptors.request.use(config => {
   const token = localStorage.getItem("accessToken");
   if (token) {
+    if (!config.headers) {
+      config.headers = {};
+    }
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -29,7 +32,11 @@ api.interceptors.response.use(
       }
 
       try {
-        const response = await axios.post(`${API_URL}/auth/api/auth/refresh-token`, { refreshToken });
+        interface RefreshTokenResponse {
+          accessToken: string;
+          refreshToken: string;
+        }
+        const response = await axios.post<RefreshTokenResponse>(`${API_URL}/auth/api/auth/refresh-token`, { refreshToken });
         const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data;
 
         localStorage.setItem("accessToken", newAccessToken);

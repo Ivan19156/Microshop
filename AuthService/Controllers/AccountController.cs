@@ -10,10 +10,10 @@ using Microsoft.AspNetCore.Mvc;
 [Route("[controller]")]
 public class AccountController : ControllerBase
 {
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly ITokenService _tokenService;
     private readonly IRefreshTokenRepository _rtRepo;
-    public AccountController(UserManager<IdentityUser> userManager, ITokenService tokenService, IRefreshTokenRepository rtRepo)
+    public AccountController(UserManager<ApplicationUser> userManager, ITokenService tokenService, IRefreshTokenRepository rtRepo)
     {
         _userManager = userManager;
         _tokenService = tokenService;
@@ -37,25 +37,24 @@ public IActionResult Login(string returnUrl = "/account/google-response")
 
   
     
-    // GET /account/logout
+    
 [HttpGet("logout")]
-[Authorize] // дозволяє як JWT, так і cookie
+[Authorize] 
 public IActionResult Logout()
 {
-    // Якщо користувач автентифікований через cookie — вийде
-    // Якщо через JWT — цей метод не має сенсу (немає сесії)
+    
     return SignOut(
         new AuthenticationProperties
         {
-            RedirectUri = "/" // можеш змінити на інше
+            RedirectUri = "/" 
         },
         CookieAuthenticationDefaults.AuthenticationScheme
     );
 }
 
-// GET /account/userinfo
+
 [HttpGet("userinfo")]
-[Authorize] // дозволяє і JWT, і cookie
+[Authorize] 
 public IActionResult UserInfo()
 {
     var user = HttpContext.User;
@@ -66,7 +65,7 @@ public IActionResult UserInfo()
         {
             Name = user.Identity.Name,
             Email = user.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value,
-            AuthenticatedWith = user.Identity.AuthenticationType // "Cookies" або "JwtBearer"
+            AuthenticatedWith = user.Identity.AuthenticationType 
         });
     }
 
@@ -91,35 +90,35 @@ public async Task<IActionResult> GoogleResponse()
     if (email == null)
         return BadRequest("Email claim not found.");
 
-    // 1. Знайти або створити користувача у БД
+    
     var user = await _userManager.FindByEmailAsync(email);
 if (user == null)
 {
-    user = new IdentityUser
+    user = new ApplicationUser
     {
         UserName = email,
         Email = email,
-        EmailConfirmed = true // Якщо хочеш одразу підтверджувати
+        EmailConfirmed = true 
     };
 
     var res = await _userManager.CreateAsync(user);
     if (!res.Succeeded)
     {
-        // Обробити помилки створення користувача
+        
         return BadRequest(res.Errors);
     }
 }
 
 
-    // 2. Згенерувати JWT і refresh токени
+    
     var jwtToken = _tokenService.GenerateAccessToken(user);
     var refreshToken = _tokenService.GenerateRefreshToken(user);
 
-    // 3. Зберегти refresh токен в БД або кеші (опціонально)
+    
     await _rtRepo.AddAsync(refreshToken);
     await _rtRepo.SaveChangesAsync();
 
-    // 4. Повернути токени клієнту
+    
         return Ok(new
         {
             token = jwtToken,

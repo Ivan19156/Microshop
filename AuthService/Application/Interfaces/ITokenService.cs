@@ -3,6 +3,6 @@ using Models;
 
 public interface ITokenService
 {
-    string GenerateAccessToken(IdentityUser user);
-    RefreshToken GenerateRefreshToken(IdentityUser user);
+    string GenerateAccessToken(ApplicationUser user);
+    RefreshToken GenerateRefreshToken(ApplicationUser user);
 }

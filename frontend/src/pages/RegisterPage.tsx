@@ -4,11 +4,13 @@ import {
 } from "@mui/material";
 import { toast } from "react-toastify";
 import { api } from "../api";
+import { useNavigate } from "react-router-dom";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleRegister = async () => {
     if (password !== confirmPassword) {
@@ -19,6 +21,7 @@ export default function RegisterPage() {
     try {
       await api.post("/auth/api/auth/register", { email, password, confirmPassword });
       toast.success("Реєстрація успішна!");
+      navigate("/login");
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Помилка реєстрації");
     }

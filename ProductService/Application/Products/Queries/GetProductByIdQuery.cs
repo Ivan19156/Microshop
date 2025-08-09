@@ -1,7 +1,10 @@
 using Entities;
 using MediatR;
-using Entities;
+using Application.Common.Abstractions;
+using Application.Products.Dtos;
+using ProductService.Application.Products.Dtos;
 
 namespace Application.Products.Queries;
 
-public record GetProductByIdQuery(int Id) : IRequest<Product?>;
+public record GetProductByIdQuery(Guid Id) : IQuery<ProductDto?>;
+

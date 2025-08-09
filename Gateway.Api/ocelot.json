@@ -3,21 +3,36 @@
     {
       "DownstreamPathTemplate": "/account/login",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [{ "Host": "authservice", "Port": 5000 }],
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authservice",
+          "Port": 5000
+        }
+      ],
       "UpstreamPathTemplate": "/auth/account/login",
       "UpstreamHttpMethod": [ "GET" ]
     },
     {
       "DownstreamPathTemplate": "/account/google-response",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [{ "Host": "authservice", "Port": 5000 }],
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authservice",
+          "Port": 5000
+        }
+      ],
       "UpstreamPathTemplate": "/auth/account/google-response",
       "UpstreamHttpMethod": [ "GET" ]
     },
     {
       "DownstreamPathTemplate": "/account/userinfo",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [{ "Host": "authservice", "Port": 5000 }],
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authservice",
+          "Port": 5000
+        }
+      ],
       "UpstreamPathTemplate": "/auth/account/userinfo",
       "UpstreamHttpMethod": [ "GET" ],
       "AuthenticationOptions": {
@@ -28,68 +43,258 @@
     {
       "DownstreamPathTemplate": "/api/auth/register",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [{ "Host": "authservice", "Port": 5000 }],
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authservice",
+          "Port": 5000
+        }
+      ],
       "UpstreamPathTemplate": "/auth/api/auth/register",
       "UpstreamHttpMethod": [ "POST" ]
     },
     {
       "DownstreamPathTemplate": "/api/auth/login",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [{ "Host": "authservice", "Port": 5000 }],
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authservice",
+          "Port": 5000
+        }
+      ],
       "UpstreamPathTemplate": "/auth/api/auth/login",
       "UpstreamHttpMethod": [ "POST" ]
     },
     {
       "DownstreamPathTemplate": "/api/auth/refresh-token",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [{ "Host": "authservice", "Port": 5000 }],
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authservice",
+          "Port": 5000
+        }
+      ],
       "UpstreamPathTemplate": "/auth/api/auth/refresh-token",
       "UpstreamHttpMethod": [ "POST" ]
     },
     {
-  "DownstreamPathTemplate": "/profile/profile",
-  "DownstreamScheme": "http",
-  "DownstreamHostAndPorts": [{ "Host": "authservice", "Port": 5000 }],
-  "UpstreamPathTemplate": "/auth/api/profile/profile",
-  "UpstreamHttpMethod": [ "GET" ]
-},
-{
-  "DownstreamPathTemplate": "/profile/profile",
-  "DownstreamScheme": "http",
-  "DownstreamHostAndPorts": [{ "Host": "authservice", "Port": 5000 }],
-  "UpstreamPathTemplate": "/auth/api/profile/profile",
-  "UpstreamHttpMethod": [ "PUT" ]
-},
-{
-      "DownstreamPathTemplate": "/api/products",
+      "DownstreamPathTemplate": "/profile/profile",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        { "Host": "productservice", "Port": 80 }
+        {
+          "Host": "authservice",
+          "Port": 5000
+        }
       ],
-      "UpstreamPathTemplate": "/api/products",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DelegatingHandlers": [ "HealthCheckHandler" ]
+      "UpstreamPathTemplate": "/auth/api/profile/profile",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    {
+      "DownstreamPathTemplate": "/profile/profile",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authservice",
+          "Port": 5000
+        }
+      ],
+      "UpstreamPathTemplate": "/auth/api/profile/profile",
+      "UpstreamHttpMethod": [ "PUT" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
     },
     {
       "DownstreamPathTemplate": "/api/products",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        { "Host": "productservice", "Port": 80 }
+        {
+          "Host": "productservice",
+          "Port": 80
+        }
       ],
-      "UpstreamPathTemplate": "/api/products",
+      "UpstreamPathTemplate": "/products",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DelegatingHandlers": [ "HealthCheckHandler" ]
+
+    },
+    {
+      "DownstreamPathTemplate": "/api/products",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "productservice",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/products",
       "UpstreamHttpMethod": [ "POST" ],
+      "DelegatingHandlers": [ "HealthCheckHandler" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/products/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "productservice",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/products/{id}",
+      "UpstreamHttpMethod": [ "GET" ],
       "DelegatingHandlers": [ "HealthCheckHandler" ]
     },
     {
       "DownstreamPathTemplate": "/api/products/{id}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        { "Host": "productservice", "Port": 80 }
+        {
+          "Host": "productservice",
+          "Port": 80
+        }
       ],
-      "UpstreamPathTemplate": "/api/products/{id}",
+      "UpstreamPathTemplate": "/products/{id}",
+      "UpstreamHttpMethod": [ "PUT" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/products/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "productservice",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/products/{id}",
+      "UpstreamHttpMethod": [ "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/products/my",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "productservice",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/products/my",
       "UpstreamHttpMethod": [ "GET" ],
-      "DelegatingHandlers": [ "HealthCheckHandler" ]
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/file/upload",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "fileservice",
+          "Port": 5005
+        }
+      ],
+      "UpstreamPathTemplate": "/api/files/upload",
+      "UpstreamHttpMethod": [ "POST" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/file",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "fileservice",
+          "Port": 5005
+        }
+      ],
+      "UpstreamPathTemplate": "/api/files",
+      "UpstreamHttpMethod": [ "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/orders",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "orchestrator",
+          "Port": 5015
+        }
+      ],
+      "UpstreamPathTemplate": "/orders",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/order{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "orderservice",
+          "Port": 5010
+        }
+      ],
+      "UpstreamPathTemplate": "/api/order{id}",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/order",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "orderservice",
+          "Port": 5010
+        }
+      ],
+      "UpstreamPathTemplate": "/api/order",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/order{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "orderservice",
+          "Port": 5010
+        }
+      ],
+      "UpstreamPathTemplate": "/api/order{id}",
+      "UpstreamHttpMethod": [ "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/order/my-orders",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "orderservice",
+          "Port": 5010
+        }
+      ],
+      "UpstreamPathTemplate": "/api/order/my-orders",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/Auth/me",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authservice",
+          "Port": 5000
+        }
+      ],
+      "UpstreamPathTemplate": "/users/me",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
     }
+
+
+
 
   ],
   "GlobalConfiguration": {

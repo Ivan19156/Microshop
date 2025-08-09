@@ -1,34 +1,37 @@
-using Application.Products.Commands;
+﻿using Application.Products.Commands;
 using Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using ProductDbContext;
 using Entities;
+using ProductService.Infrastructure.Persistence;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using AutoMapper;
+using ProductService.Infrastructure.Repository;
 
 namespace Application.Products.Commands;
 
 public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand, Unit>
 {
-    private readonly AppDbContext _context;
+    private readonly IProductRepository _productRepository;
+    private readonly IMapper _mapper;
 
-    public UpdateProductCommandHandler(AppDbContext context)
+    public UpdateProductCommandHandler(IProductRepository productRepository, IMapper mapper)
     {
-        _context = context;
+        _productRepository = productRepository;
+        _mapper = mapper;
     }
 
     public async Task<Unit> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
     {
-        var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
-
+        var product = await _productRepository.GetByIdAsync(request.Id, cancellationToken);
         if (product == null)
             throw new Exception($"Product with ID {request.Id} not found");
 
-        product.Name = request.Product.Name;
-        product.Description = request.Product.Description;
-        product.Price = request.Product.Price;
+        _mapper.Map(request.dto, product); 
 
-        await _context.SaveChangesAsync(cancellationToken);
+        await _productRepository.UpdateAsync(product, cancellationToken);
 
         return Unit.Value;
     }
 }
+

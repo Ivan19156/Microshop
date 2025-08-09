@@ -2,6 +2,9 @@ using DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using AuthService.DTOs;
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 
 [ApiController]
@@ -9,10 +12,15 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IAuthService authService)
+
+    public AuthController(IAuthService authService, UserManager<ApplicationUser> userManager, ILogger<AuthController> logger)
     {
         _authService = authService;
+        _userManager = userManager;
+        _logger = logger;
     }
 
     [HttpPost("register")]
@@ -54,7 +62,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("refresh-token")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDto dto)
     {
         try
@@ -75,4 +83,47 @@ public class AuthController : ControllerBase
             return BadRequest(new { error = ex.Message });
         }
     }
+
+    
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<UserDto>> GetUserById(Guid userId)
+        {
+            var user = await _authService.GetUserByIdAsync(userId);
+            if (user == null)
+                return NotFound();
+
+            return Ok(user);
+        }
+
+    [Authorize]
+    [HttpGet("me")]
+    public async Task<ActionResult<UserInfoDto>> GetCurrentUser()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var allClaims = User.Claims.Select(c => $"{c.Type}: {c.Value}");
+        _logger.LogInformation("CLAIMS: " + string.Join(", ", allClaims));
+
+        if (userId == null)
+            return Unauthorized("Не вдалося отримати ID користувача з токена.");
+
+        var user = await _userManager.FindByIdAsync(userId);
+
+        if (user == null)
+            return NotFound("Користувач не знайдений.");
+
+        var userInfo = new UserInfoDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            AvatarUrl = user.AvatarUrl,
+            DateOfBirth = user.DateOfBirth
+        };
+
+        return Ok(userInfo);
+    }
 }
+
+

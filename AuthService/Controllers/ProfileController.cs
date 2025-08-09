@@ -28,28 +28,34 @@ public class ProfileController : ControllerBase
             user.Email,
             user.FirstName,
             user.LastName,
-            //user.AvatarUrl,
+            user.AvatarUrl,
             user.DateOfBirth
         });
     }
 
-[Authorize]
-[HttpPut("profile")]
-public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto model)
-{
-    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    var user = await _userManager.FindByIdAsync(userId);
+    [Authorize]
+    [HttpPut("profile")]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto model)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return Unauthorized("Користувача не знайдено в токені");
 
-    if (user == null) return NotFound();
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+            return NotFound("Користувача не знайдено");
 
-    user.FirstName = model.FirstName;
-    user.LastName = model.LastName;
-    user.DateOfBirth = model.DateOfBirth;
-    //user.AvatarUrl = model.AvatarUrl;
+        user.FirstName = model.FirstName;
+        user.LastName = model.LastName;
+        user.DateOfBirth = model.DateOfBirth;
+        user.AvatarUrl = model.AvatarUrl;
 
-    await _userManager.UpdateAsync(user);
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+            return BadRequest(result.Errors);
 
-    return NoContent();
-}
+        return NoContent();
+    }
+
 
 }

@@ -35,6 +35,7 @@ services:
       - "10000:10000"
       - "10001:10001"
       - "10002:10002"
+    command: "azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --skipApiVersionCheck"
     volumes:
       - azurite_data:/data
 
@@ -90,6 +91,41 @@ services:
     restart: unless-stopped
     depends_on:
       - gateway
+  fileservice:
+    build:
+      context: ./FileService
+      dockerfile: Dockerfile
+    container_name: fileservice
+    ports:
+      - "5005:5005"
+    environment:
+      - ASPNETCORE_URLS=http://+:5005
+      - ASPNETCORE_ENVIRONMENT=Development
+      - AzureBlobStorage__ConnectionString=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFeqWFSIt...==;BlobEndpoint=http://azurite:10000/devstoreaccount1;
+    depends_on:
+      - azurite
+  orderservice:
+    build:
+      context: ./orderservice
+      dockerfile: Dockerfile
+    container_name: orderservice
+    ports: 
+      - "5010:5010"
+    environment:
+      - ASPNETCORE_URLS=http://+:5010
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=OrderDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;
+    depends_on:
+      - sqlserver
+  orchestrator:
+      build:
+        context: ./OrchestratorService
+        dockerfile: Dockerfile
+      container_name: orchestrator
+      ports:
+        - "5015:5015"
+      depends_on:
+        - authservice
+        - productservice
 
 volumes:
   sql_data:

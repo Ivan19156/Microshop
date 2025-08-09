@@ -15,12 +15,12 @@ export default function LoginPage() {
   try {
     const response = await api.post("/auth/api/auth/login", { email, password });
 
-    const { accessToken, refreshToken } = response.data;
+    const { accessToken, refreshToken } = response.data as { accessToken: string; refreshToken: string };
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("refreshToken", refreshToken);
 
     toast.success("Успішний вхід!");
-    navigate("/profile/edit");
+    navigate("/dashboard");
   } catch (error) {
     toast.error("Помилка входу");
   }

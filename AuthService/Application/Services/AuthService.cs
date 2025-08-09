@@ -1,3 +1,4 @@
+using AuthService.DTOs;
 using Microsoft.AspNetCore.Identity;
 
 public class AuthenticationService : IAuthService
@@ -16,7 +17,7 @@ public class AuthenticationService : IAuthService
         _refreshTokenRepository = refreshTokenRepository;
     }
 
-    public async Task<string> RegisterAsync(RegisterDto dto)
+    public async Task<Guid> RegisterAsync(RegisterDto dto)
     {
         if (dto.Password != dto.ConfirmPassword)
             throw new Exception("Passwords do not match");
@@ -27,7 +28,7 @@ public class AuthenticationService : IAuthService
         if (!result.Succeeded)
             throw new Exception(string.Join("; ", result.Errors.Select(e => e.Description)));
 
-        return "User registered";
+        return user.Id ;
     }
 
     public async Task<(string accessToken, string refreshToken)> LoginAsync(LoginDto dto)
@@ -68,5 +69,22 @@ if (!passwordValid)
         await _refreshTokenRepository.SaveChangesAsync();
 
         return (accessToken, newRefreshToken.Token);
+    }
+
+    public async Task<UserDto?> GetUserByIdAsync(Guid userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null)
+            return null;
+
+        return new UserDto
+        {
+            Id = user.Id,
+            //UserName = user.UserName,
+            //Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            AvatarUrl = user.AvatarUrl,
+        };
     }
 }
