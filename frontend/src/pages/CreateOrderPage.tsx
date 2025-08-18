@@ -53,7 +53,7 @@ export default function CreateOrderPage() {
         quantity,
       });
       toast.success("Замовлення створено!");
-      navigate("/my-orders");
+      navigate("/dashboard");
     } catch (error) {
       toast.error("Не вдалося створити замовлення");
     }

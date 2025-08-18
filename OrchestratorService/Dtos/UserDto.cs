@@ -8,5 +8,6 @@ public class UserDto
     public string? LastName { get; set; }
     public string Email { get; set; } = default!;
     public DateTime? DateOfBirth { get; set; }
+    public string Phone { get; set; } = default!;
     // public string? AvatarUrl { get; set; } // Якщо використовуєш
 }

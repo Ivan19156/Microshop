@@ -19,14 +19,19 @@ public class OrderServiceClient : IOrderServiceClient
 
     public async Task<Guid?> CreateOrderAsync(CreateOrderCommand command)
     {
+        var json = JsonSerializer.Serialize(command);
+        _logger.LogInformation("JSON being sent to OrderService: {Json}", json);
+
         var response = await _httpClient.PostAsJsonAsync("/api/order", command);
+        _logger.LogInformation("OrderService response: " + response);
+
         if (!response.IsSuccessStatusCode)
             return null;
 
         var result = await response.Content.ReadFromJsonAsync<OrderResponse>();
+        _logger.LogInformation("OrderService response content: " + result);
         return result?.OrderId;
     }
-
 
 }
 

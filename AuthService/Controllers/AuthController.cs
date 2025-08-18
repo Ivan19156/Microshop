@@ -105,12 +105,12 @@ public class AuthController : ControllerBase
         _logger.LogInformation("CLAIMS: " + string.Join(", ", allClaims));
 
         if (userId == null)
-            return Unauthorized("Не вдалося отримати ID користувача з токена.");
+            return Unauthorized("пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ID пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.");
 
         var user = await _userManager.FindByIdAsync(userId);
 
         if (user == null)
-            return NotFound("Користувач не знайдений.");
+            return NotFound("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.");
 
         var userInfo = new UserInfoDto
         {
@@ -119,7 +119,8 @@ public class AuthController : ControllerBase
             FirstName = user.FirstName,
             LastName = user.LastName,
             AvatarUrl = user.AvatarUrl,
-            DateOfBirth = user.DateOfBirth
+            DateOfBirth = user.DateOfBirth,
+            PhoneNumber = user.PhoneNumber
         };
 
         return Ok(userInfo);

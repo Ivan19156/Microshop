@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderService", "OrderServic
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrchestratorService", "OrchestratorService\OrchestratorService.csproj", "{1044FF17-E7D4-4C4F-90AA-EB1D47262BBA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationService", "NotificationService\NotificationService.csproj", "{00247B03-13D5-40A9-9C1C-142E5A1C77F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microshop.Contracts", "Microshop.Contracts\Microshop.Contracts.csproj", "{CCD77F51-D93E-484E-9A94-3DB8E6F88077}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +49,14 @@ Global
 		{1044FF17-E7D4-4C4F-90AA-EB1D47262BBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1044FF17-E7D4-4C4F-90AA-EB1D47262BBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1044FF17-E7D4-4C4F-90AA-EB1D47262BBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00247B03-13D5-40A9-9C1C-142E5A1C77F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00247B03-13D5-40A9-9C1C-142E5A1C77F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00247B03-13D5-40A9-9C1C-142E5A1C77F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00247B03-13D5-40A9-9C1C-142E5A1C77F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCD77F51-D93E-484E-9A94-3DB8E6F88077}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCD77F51-D93E-484E-9A94-3DB8E6F88077}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCD77F51-D93E-484E-9A94-3DB8E6F88077}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCD77F51-D93E-484E-9A94-3DB8E6F88077}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -18,7 +18,7 @@ public class OrderOrchestrationService
         _productClient = productClient;
         _orderClient = orderClient;
     }
-public async Task<Guid?> CreateOrderAsync(Guid userId, CreateOrderRequest request)
+    public async Task<Guid?> CreateOrderAsync(Guid userId, CreateOrderRequest request)
     {
         var user = await _authClient.GetUserByIdAsync(userId);
         if (user is null)
@@ -44,7 +44,12 @@ public async Task<Guid?> CreateOrderAsync(Guid userId, CreateOrderRequest reques
             });
         }
 
-        var command = new CreateOrderCommand(userId, items);
+        var command = new CreateOrderCommand(
+            UserId: userId,
+            CustomerEmail: user.Email,      // нове поле
+            CustomerPhone: user.Phone,      // нове поле
+            Items: items
+        );
 
         var orderId = await _orderClient.CreateOrderAsync(command);
         if (orderId == null)

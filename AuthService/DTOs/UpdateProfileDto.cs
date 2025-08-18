@@ -8,4 +8,5 @@ public class UpdateProfileDto
 
     [JsonPropertyName("avatarUrl")]
     public string? AvatarUrl { get; set; }
+    public string? PhoneNumber { get; set; } 
 }

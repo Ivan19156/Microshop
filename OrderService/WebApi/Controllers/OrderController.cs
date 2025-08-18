@@ -15,19 +15,23 @@ namespace OrderService.API.Controllers
     public class OrderController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly ILogger<OrderController> _logger;
 
-        public OrderController(IMediator mediator)
+        public OrderController(IMediator mediator, ILogger<OrderController> logger)
         {
             _mediator = mediator;
+            _logger = logger;
         }
 
-        
+
         [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateOrderCommand command)
-    {
-        var orderId = await _mediator.Send(command);
-        return CreatedAtAction(nameof(GetById), new { id = orderId }, new { OrderId = orderId });
-    }
+        public async Task<IActionResult> Create([FromBody] CreateOrderCommand command)
+        {
+            _logger.LogInformation("Received CreateOrderCommand request: {@Command}", command);
+            var orderId = await _mediator.Send(command);
+            _logger.LogInformation("Order created with Id: {OrderId}", orderId);
+            return CreatedAtAction(nameof(GetById), new { id = orderId }, new { OrderId = orderId });
+        }
 
 
         [HttpGet("{id}")]

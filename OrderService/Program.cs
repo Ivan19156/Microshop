@@ -1,13 +1,14 @@
-using Microsoft.Extensions.DependencyInjection;
-using MediatR;
 using Azure.Messaging.ServiceBus;
+using MassTransit;
+using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using OrderService.Application.Mapping;
 using OrderService.Infrastructure.Data;
 using OrderService.Infrastructure.Repositories.Interfaces;
 using OrderService.Infrastructure.Repositories.Realizations; // Ensure MediatR namespace is included  
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 
@@ -58,6 +59,14 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!))
     };
 });
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingAzureServiceBus((context, cfg) =>
+    {
+        cfg.Host(builder.Configuration["AzureServiceBus:ConnectionString"]);
+    });
+});
+
 
 
 builder.Services.AddEndpointsApiExplorer();

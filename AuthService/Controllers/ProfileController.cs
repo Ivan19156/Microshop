@@ -39,16 +39,17 @@ public class ProfileController : ControllerBase
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId == null)
-            return Unauthorized("Користувача не знайдено в токені");
+            return Unauthorized("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ");
 
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
-            return NotFound("Користувача не знайдено");
+            return NotFound("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
 
         user.FirstName = model.FirstName;
         user.LastName = model.LastName;
         user.DateOfBirth = model.DateOfBirth;
         user.AvatarUrl = model.AvatarUrl;
+        user.PhoneNumber = model.PhoneNumber;
 
         var result = await _userManager.UpdateAsync(user);
         if (!result.Succeeded)

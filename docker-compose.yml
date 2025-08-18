@@ -106,14 +106,15 @@ services:
       - azurite
   orderservice:
     build:
-      context: ./orderservice
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: OrderService/Dockerfile
     container_name: orderservice
     ports: 
       - "5010:5010"
     environment:
       - ASPNETCORE_URLS=http://+:5010
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=OrderDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;
+      - AzureServiceBus__ConnectionString=${AzureServiceBus__ConnectionString}
     depends_on:
       - sqlserver
   orchestrator:
@@ -127,6 +128,21 @@ services:
         - authservice
         - productservice
 
+  notificationservice:
+    build:
+      context: .
+      dockerfile: NotificationService/Dockerfile
+    container_name: notificationservice
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - AzureServiceBus__ConnectionString=${AzureServiceBus__ConnectionString}
+      - SendGrid__ApiKey=${SendGrid__ApiKey}
+      - Twilio__AccountSid=${Twilio__AccountSid}
+      - Twilio__AuthToken=${Twilio__AuthToken}
+      - Twilio__FromPhone=${Twilio__FromPhone}
+    depends_on:
+      - orderservice
+    restart: unless-stopped
 volumes:
   sql_data:
   azurite_data:

@@ -8,10 +8,12 @@ namespace OrderService.Infrastructure.Repositories.Realizations;
 public class OrderRepository : IOrderRepository
 {
     private readonly OrderDbContext _context;
+    private readonly ILogger<OrderRepository> _logger;
 
-    public OrderRepository(OrderDbContext context)
+    public OrderRepository(OrderDbContext context, ILogger<OrderRepository> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public async Task<List<Order>> GetAllAsync()
@@ -30,8 +32,10 @@ public class OrderRepository : IOrderRepository
 
     public async Task<Guid> AddAsync(Order order, CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation("Attempting to add order with Id: {OrderId}", order.Id);
         _context.Orders.Add(order);
         await _context.SaveChangesAsync(cancellationToken);
+        _logger.LogInformation("Order added successfully with Id: {OrderId}", order.Id);
         return order.Id;
     }
 

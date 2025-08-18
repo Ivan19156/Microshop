@@ -14,4 +14,6 @@ public class Order
     public List<OrderItem> Items { get; set; } = new();
 
     public decimal TotalPrice => Items.Sum(item => item.Quantity * item.UnitPrice);
+    public string CustomerEmail { get; set; } = default!;
+    public string? CustomerPhone { get; set; } = default!;
 }

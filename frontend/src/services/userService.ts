@@ -10,6 +10,7 @@ export interface UserInfo {
   email: string;
   avatarUrl?: string | null;
   dateOfBirth: string | null;
+  phoneNumber?: string | null;
 }
 
 export const getUserInfo = async (): Promise<UserInfo> => {

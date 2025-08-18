@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    ports:
+      - "1433:1433"
+    environment:
+      SA_PASSWORD: ${SA_PASSWORD}
+      ACCEPT_EULA: "Y"
+    volumes:
+      - sql_data:/var/opt/mssql
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: azurite
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    command: "azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --skipApiVersionCheck"
+    volumes:
+      - azurite_data:/data
+
+  authservice:
+    image: <acr-name>.azurecr.io/authservice:latest
+    container_name: authservice
+    ports:
+      - "5000:5000"
+    environment:
+      - Jwt__Key=${Jwt__Key}
+      - Jwt__Issuer=${Jwt__Issuer}
+      - SA_PASSWORD=${SA_PASSWORD}
+    depends_on:
+      - sqlserver
+      - rabbitmq
+      - redis
+
+  productservice:
+    image: <acr-name>.azurecr.io/productservice:latest
+    container_name: productservice
+    environment:
+      - Redis__ConnectionString=${Redis__ConnectionString}
+      - AzureBlobStorage__ConnectionString=${AzureBlobStorage__ConnectionString}
+      - Jwt__Key=${Jwt__Key}
+      - Jwt__Issuer=${Jwt__Issuer}
+    depends_on:
+      - sqlserver
+      - redis
+      - rabbitmq
+      - azurite
+
+  fileservice:
+    image: <acr-name>.azurecr.io/fileservice:latest
+    container_name: fileservice
+    environment:
+      - AzureBlobStorage__ConnectionString=${AzureBlobStorage__ConnectionString}
+      - Jwt__Key=${Jwt__Key}
+      - Jwt__Issuer=${Jwt__Issuer}
+    depends_on:
+      - azurite
+
+  orderservice:
+    image: <acr-name>.azurecr.io/orderservice:latest
+    container_name: orderservice
+    environment:
+      - Jwt__Key=${Jwt__Key}
+      - Jwt__Issuer=${Jwt__Issuer}
+      - AzureServiceBus__ConnectionString=${AzureServiceBus__ConnectionString}
+    depends_on:
+      - sqlserver
+
+  orchestrator:
+    image: <acr-name>.azurecr.io/orchestrator:latest
+    container_name: orchestrator
+    environment:
+      - Jwt__Key=${Jwt__Key}
+      - Jwt__Issuer=${Jwt__Issuer}
+    depends_on:
+      - authservice
+      - productservice
+
+  notificationservice:
+    image: <acr-name>.azurecr.io/notificationservice:latest
+    container_name: notificationservice
+    environment:
+      - Jwt__Key=${Jwt__Key}
+      - Jwt__Issuer=${Jwt__Issuer}
+      - AzureServiceBus__ConnectionString=${AzureServiceBus__ConnectionString}
+      - SendGrid__ApiKey=${SendGrid__ApiKey}
+      - Twilio__AccountSid=${Twilio__AccountSid}
+      - Twilio__AuthToken=${Twilio__AuthToken}
+      - Twilio__FromPhone=${Twilio__FromPhone}
+    depends_on:
+      - orderservice
+
+volumes:
+  sql_data:
+  azurite_data:
